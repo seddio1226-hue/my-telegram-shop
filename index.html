@@ -3,111 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Digital Noir Premium</title>
+    <title>Digital Noir Shop</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --accent: #2481cc;
-            --glass: rgba(255, 255, 255, 0.1);
-            --text-secondary: #888;
+            /* Глубокий градиент на фон */
+            --bg: radial-gradient(circle at center, #0a192f 0%, #000000 100%);
+            --accent: #2481cc; /* Тот самый синий */
+            --card-bg: rgba(28, 31, 38, 0.8);
+            --text-main: #ffffff;
+            --text-dim: #888888;
         }
 
         body {
             background: var(--bg);
             background-attachment: fixed;
-            color: #fff;
-            font-family: -apple-system, system-ui, sans-serif;
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             padding: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-        }
-
-        /* Анимация появления */
-        @keyframes popIn {
-            0% { transform: scale(0.5); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+            overflow-x: hidden;
         }
 
         .header {
             text-align: center;
-            padding: 20px 0 10px;
+            padding: 25px 0 10px;
         }
 
         .header h1 {
-            font-size: 24px;
+            font-size: 26px;
             margin: 0;
-            background: linear-gradient(to bottom, #fff, var(--accent));
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: linear-gradient(to bottom, #fff, #2481cc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
+        /* Сетка категорий (Синие пузыри) */
         .category-screen {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            align-content: center;
             gap: 20px;
-            padding: 20px;
+            padding: 30px 20px;
             flex-grow: 1;
         }
 
         .category-bubble {
-            width: 110px;
-            height: 110px;
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
+            width: 105px;
+            height: 105px;
+            background: var(--accent);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            font-size: 11px;
-            font-weight: bold;
+            font-size: 12px;
+            font-weight: 800;
             cursor: pointer;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
-            transition: all 0.3s ease;
-            padding: 15px;
+            /* Тень для объема */
+            box-shadow: 0 8px 20px rgba(36, 129, 204, 0.4), inset 0 -4px 10px rgba(0,0,0,0.2);
+            /* Анимация появления каждого шарика */
+            animation: bubblePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+            padding: 12px;
             box-sizing: border-box;
             text-transform: uppercase;
+            transition: transform 0.2s ease;
         }
 
-        .category-bubble:active { transform: scale(0.9); background: var(--accent); }
+        @keyframes bubblePop {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
 
+        .category-bubble:active {
+            transform: scale(0.9);
+            filter: brightness(1.2);
+        }
+
+        /* Список товаров */
         #shop-container {
             display: none;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            padding: 15px;
-            animation: popIn 0.3s ease-out;
+            gap: 15px;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .card {
             background: var(--card-bg);
-            backdrop-filter: blur(5px);
-            border-radius: 20px;
+            border-radius: 18px;
             padding: 12px;
             border: 1px solid rgba(255,255,255,0.05);
             display: flex;
             flex-direction: column;
+            backdrop-filter: blur(10px);
         }
 
         .card img {
             width: 100%;
             height: 100px;
             object-fit: cover;
-            border-radius: 14px;
-            margin-bottom: 8px;
+            border-radius: 12px;
+            margin-bottom: 10px;
         }
 
-        .card h2 { font-size: 14px; margin: 5px 0; height: 34px; overflow: hidden; }
-        .price { color: #31b545; font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+        .card h2 { font-size: 14px; margin: 5px 0; height: 35px; overflow: hidden; }
+        .price { color: #31b545; font-weight: bold; font-size: 16px; margin-bottom: 12px; }
 
         .buy-btn {
             background: var(--accent);
@@ -115,27 +127,31 @@
             border: none;
             width: 100%;
             padding: 10px;
-            border-radius: 12px;
+            border-radius: 10px;
             font-weight: bold;
-            box-shadow: 0 4px 15px rgba(36, 129, 204, 0.3);
         }
 
         /* Оферта */
-        .offer-text {
+        .footer-info {
             padding: 20px;
-            font-size: 10px;
-            color: var(--text-secondary);
             text-align: center;
-            line-height: 1.4;
+        }
+
+        .offer-text {
+            font-size: 10px;
+            color: var(--text-dim);
+            line-height: 1.5;
+            max-width: 280px;
+            margin: 0 auto;
         }
 
         .back-btn {
             display: none;
-            margin: 15px auto;
-            background: var(--glass);
+            margin: 10px auto;
+            background: rgba(255,255,255,0.1);
             border: 1px solid var(--accent);
             color: #fff;
-            padding: 8px 20px;
+            padding: 8px 18px;
             border-radius: 20px;
             font-size: 12px;
             cursor: pointer;
@@ -150,16 +166,18 @@
         <h1>Digital Noir</h1>
     </div>
 
-    <button class="back-btn" id="backBtn" onclick="showCategories()">← Назад к категориям</button>
+    <button class="back-btn" id="backBtn" onclick="showCategories()">← К категориям</button>
     
     <div class="category-screen" id="categoryMenu">
         </div>
 
     <div id="shop-container"></div>
 
-    <div class="offer-text" id="offerBlock">
-        Нажимая кнопку «Купить», вы принимаете условия публичной оферты и политики конфиденциальности. 
-        Весь товар является цифровым и доставляется автоматически после подтверждения оплаты.
+    <div class="footer-info" id="footerInfo">
+        <p class="offer-text">
+            Нажимая кнопку «Купить», вы подтверждаете согласие с правилами магазина и договором оферты. 
+            Цифровые товары обмену и возврату не подлежат. Система оплаты защищена Crypto Bot.
+        </p>
     </div>
 
     <script>
@@ -181,35 +199,40 @@
 
         function renderCategoryMenu() {
             const menu = document.getElementById('categoryMenu');
-            const categories = [...new Set(allProducts.map(p => p.category || 'Прочее'))];
+            // Получаем уникальные категории
+            const categories = [...new Set(allProducts.map(p => p.category || 'Общее'))];
+            
             menu.innerHTML = '';
             categories.forEach((cat, index) => {
                 const bubble = document.createElement('div');
                 bubble.className = 'category-bubble';
-                bubble.style.animationDelay = `${index * 0.05}s`;
+                // Ступенчатая анимация появления
+                bubble.style.animationDelay = `${index * 0.08}s`;
                 bubble.innerText = cat;
                 bubble.onclick = () => showProducts(cat);
                 menu.appendChild(bubble);
             });
-            document.getElementById('offerBlock').classList.remove('hidden');
+            document.getElementById('footerInfo').classList.remove('hidden');
         }
 
         function showProducts(category) {
             document.getElementById('categoryMenu').classList.add('hidden');
             document.getElementById('backBtn').style.display = 'block';
-            document.getElementById('offerBlock').classList.add('hidden'); // Скрываем оферту в списке товаров для удобства
+            document.getElementById('footerInfo').classList.add('hidden');
             
             const container = document.getElementById('shop-container');
             container.style.display = 'grid';
             container.innerHTML = '';
 
-            const filtered = allProducts.filter(p => (p.category || 'Прочее') === category);
+            const filtered = allProducts.filter(p => (p.category || 'Общее') === category);
+            
             filtered.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'card';
-                const img = item.image_url || 'https://via.placeholder.com/150/2d323e/ffffff?text=Item';
+                const img = item.image_url || 'https://via.placeholder.com/150/1c1f26/ffffff?text=Digital+Noir';
+                
                 card.innerHTML = `
-                    <img src="${img}">
+                    <img src="${img}" alt="${item.name}">
                     <h2>${item.name}</h2>
                     <div class="price">${item.price} ₽</div>
                     <button class="buy-btn" onclick="sendOrder('${item.name}')">Купить</button>
@@ -222,16 +245,7 @@
             document.getElementById('categoryMenu').classList.remove('hidden');
             document.getElementById('shop-container').style.display = 'none';
             document.getElementById('backBtn').style.display = 'none';
-            document.getElementById('offerBlock').classList.remove('hidden');
+            document.getElementById('footerInfo').classList.remove('hidden');
         }
 
-        function sendOrder(name) {
-            const cmd = "buy_" + name.toLowerCase().replace(/ /g, "_");
-            tg.sendData(cmd);
-            tg.close();
-        }
-
-        init();
-    </script>
-</body>
-</html>
+        function sendOrder(name)
