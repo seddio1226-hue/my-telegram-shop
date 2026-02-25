@@ -1,40 +1,105 @@
-<div class="shop-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px;">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Digital Noir Shop</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <style>
+        :root {
+            --bg-color: #0f1216;
+            --card-bg: #1c1f26;
+            --text-color: #ffffff;
+            --accent-color: #31b545;
+            --button-color: #2481cc;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0; padding: 15px;
+        }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { font-size: 24px; margin: 0; color: var(--button-color); }
         
-        <div class="card">
-            <img src="https://i.ibb.co/v6Q99vN/cs2.jpg" alt="CS2">
-            <h2>CS2 Prime</h2>
-            <div class="price">1 390 ₽</div>
-            <button onclick="buy('buy_cs2')">Купить</button>
-        </div>
-
-        <div class="card">
-            <img src="https://i.ibb.co/0m099vN/mc.jpg" alt="Minecraft">
-            <h2>Minecraft</h2>
-            <div class="price">2 500 ₽</div>
-            <button onclick="buy('buy_minecraft')">Купить</button>
-        </div>
-
-        <div class="card">
-            <img src="https://i.ibb.co/F8z99vN/steam.jpg" alt="Steam">
-            <h2>Steam 10$</h2>
-            <div class="price">1 100 ₽</div>
-            <button onclick="buy('buy_steam_10')">Купить</button>
-        </div>
-
-        <div class="card">
-            <img src="https://i.ibb.co/G3z99vN/tgp.jpg" alt="TG Premium">
-            <h2>TG Premium</h2>
-            <div class="price">450 ₽</div>
-            <button onclick="buy('buy_tg_prem')">Купить</button>
-        </div>
-
+        #shop-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #2d323e;
+            transition: transform 0.2s;
+        }
+        .card:active { transform: scale(0.95); }
+        .card img { width: 100%; border-radius: 8px; margin-bottom: 10px; height: 100px; object-fit: cover; }
+        .card h2 { font-size: 14px; margin: 5px 0; height: 35px; overflow: hidden; }
+        .card .price { color: var(--accent-color); font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+        .buy-btn {
+            background: var(--button-color);
+            color: white; border: none;
+            width: 100%; padding: 8px;
+            border-radius: 6px; font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Digital Noir</h1>
+        <p style="font-size: 12px; color: #888;">Выберите товар для покупки</p>
     </div>
+
+    <div id="shop-container">
+        </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        function buy(gameId) {
+        // НАСТРОЙКИ SUPABASE
+        const SUPABASE_URL = 'ТВОЙ_URL'; 
+        const SUPABASE_KEY = 'ТВОЙ_ANON_KEY';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function loadProducts() {
+            const { data: products, error } = await supabase.from('products').select('*');
+            if (error) return console.error(error);
+
+            const container = document.getElementById('shop-container');
+            container.innerHTML = '';
+
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                // Используем стандартную заглушку, если картинки нет
+                const imgSrc = product.image_url || 'https://via.placeholder.com/150/1c1f26/ffffff?text=Game';
+                
+                card.innerHTML = `
+                    <img src="${imgSrc}" alt="${product.name}">
+                    <h2>${product.name}</h2>
+                    <div class="price">${product.price} ₽</div>
+                    <button class="buy-btn" onclick="buy('${product.name}')">Купить</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function buy(name) {
+            // Отправляем чистое название товара в n8n
+            tg.sendData("buy_" + name.toLowerCase().replace(/ /g, "_"));
+            tg.close();
+        }
+
+        loadProducts();
+    </script>
+</body>
+</html>        function buy(gameId) {
             tg.sendData(gameId); // Отправляем ID игры в n8n
             tg.close();
         }
