@@ -3,62 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Digital Noir Shop</title>
+    <title>Digital Noir Premium</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body {
-            background-color: #0f1216;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0; padding: 15px;
-            -webkit-user-select: none;
+        :root {
+            --bg: #000000;
+            --card-bg: #121212;
+            --accent: #2481cc;
+            --glass: rgba(255, 255, 255, 0.1);
         }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { color: #2481cc; font-size: 22px; margin: 0; }
-        .header p { color: #888; font-size: 13px; }
-        
+
+        body {
+            background-color: var(--bg);
+            color: #fff;
+            font-family: -apple-system, system-ui, sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Анимация появления */
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Эффект меню Apple Watch */
+        .category-screen {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: center;
+            gap: 20px;
+            padding: 40px 20px;
+            min-height: 80vh;
+            transition: 0.5s ease;
+        }
+
+        .category-bubble {
+            width: 100px;
+            height: 100px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(36, 129, 204, 0.4);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+            transition: transform 0.3s ease;
+            padding: 10px;
+            box-sizing: border-box;
+            text-transform: uppercase;
+        }
+
+        .category-bubble:active { transform: scale(0.9); }
+
+        /* Контейнер магазина */
         #shop-container {
-            display: grid;
+            display: none; /* Скрыт по умолчанию */
             grid-template-columns: 1fr 1fr;
             gap: 12px;
+            padding: 15px;
+            animation: popIn 0.4s ease-out;
         }
+
         .card {
-            background: #1c1f26;
-            border-radius: 12px;
-            padding: 10px;
-            border: 1px solid #2d323e;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 12px;
+            border: 1px solid #222;
         }
+
         .card img {
             width: 100%;
             height: 100px;
             object-fit: cover;
-            border-radius: 8px;
+            border-radius: 10px;
             margin-bottom: 8px;
-            background: #2d323e;
         }
-        .card h2 { font-size: 14px; margin: 5px 0; color: #fff; text-align: left; }
-        .price { color: #31b545; font-weight: bold; font-size: 15px; margin: 5px 0 10px 0; }
+
+        .card h2 { font-size: 13px; margin: 5px 0; height: 32px; overflow: hidden; }
+        .price { color: #31b545; font-weight: bold; margin-bottom: 8px; }
+
         .buy-btn {
-            background-color: #2481cc;
-            color: white;
+            background: var(--accent);
+            color: #fff;
             border: none;
-            border-radius: 7px;
-            padding: 8px;
-            font-weight: 600;
             width: 100%;
-            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
         }
-        .buy-btn:active { transform: scale(0.96); opacity: 0.9; }
+
+        /* Кнопка Назад */
+        .back-btn {
+            display: none;
+            margin: 15px;
+            background: none;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Digital Noir</h1>
-        <p>Выберите товар для покупки</p>
+
+    <button class="back-btn" id="backBtn" onclick="showCategories()">← Категории</button>
+    
+    <div class="category-screen" id="categoryMenu">
+        <p id="loader">Загрузка космических данных...</p>
     </div>
 
     <div id="shop-container">
@@ -68,25 +131,50 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ЗАМЕНИ ЭТИ ДАННЫЕ НА СВОИ ИЗ SUPABASE SETTINGS -> API
         const SUPABASE_URL = 'https://vvinefqzoeqlndncxlff.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2aW5lZnF6b2VxbG5kbmN4bGZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NjUzMjYsImV4cCI6MjA4NzU0MTMyNn0.McwnrFtCdLH6-NGAmzuUcx1JSVxYnC9dtDViGUi1S1M';
         
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function fetchProducts() {
+        let allProducts = [];
+
+        async function init() {
             const { data, error } = await _supabase.from('products').select('*');
-            if (error) {
-                console.error(error);
-                return;
-            }
-            const container = document.getElementById('shop-container');
-            container.innerHTML = '';
+            if (error) return;
             
-            data.forEach(item => {
+            allProducts = data;
+            renderCategoryMenu();
+        }
+
+        function renderCategoryMenu() {
+            const menu = document.getElementById('categoryMenu');
+            const categories = [...new Set(allProducts.map(p => p.category || 'Прочее'))];
+            
+            menu.innerHTML = '';
+            categories.forEach((cat, index) => {
+                const bubble = document.createElement('div');
+                bubble.className = 'category-bubble';
+                // Задержка анимации для каждого круга
+                bubble.style.animationDelay = `${index * 0.1}s`;
+                bubble.innerText = cat;
+                bubble.onclick = () => showProducts(cat);
+                menu.appendChild(bubble);
+            });
+        }
+
+        function showProducts(category) {
+            document.getElementById('categoryMenu').classList.add('hidden');
+            document.getElementById('backBtn').style.display = 'block';
+            
+            const container = document.getElementById('shop-container');
+            container.style.display = 'grid';
+            container.innerHTML = '';
+
+            const filtered = allProducts.filter(p => (p.category || 'Прочее') === category);
+            
+            filtered.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'card';
-                // Если в базе нет image_url, используем картинку-заглушку
                 const img = item.image_url || 'https://via.placeholder.com/150/2d323e/ffffff?text=Digital+Noir';
                 
                 card.innerHTML = `
@@ -99,14 +187,19 @@
             });
         }
 
+        function showCategories() {
+            document.getElementById('categoryMenu').classList.remove('hidden');
+            document.getElementById('shop-container').style.display = 'none';
+            document.getElementById('backBtn').style.display = 'none';
+        }
+
         function sendOrder(name) {
-            // Форматируем имя для n8n: "CS2 Prime" -> "buy_cs2_prime"
             const cmd = "buy_" + name.toLowerCase().replace(/ /g, "_");
             tg.sendData(cmd);
             tg.close();
         }
 
-        fetchProducts();
+        init();
     </script>
 </body>
 </html>
