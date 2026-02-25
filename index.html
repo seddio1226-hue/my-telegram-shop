@@ -613,4 +613,102 @@
                 };
                 container.appendChild(card);
             });
-            up
+            updateView('products');
+        }
+
+        function openProductPage(productId, event) {
+            if(event) event.stopPropagation(); // Остановка всплытия, если клик был по кнопке
+            const product = allProducts.find(p => p.id === productId);
+            if (!product) return;
+
+            const page = document.getElementById('product-page');
+            const img = product.image_url || 'https://via.placeholder.com/600x400/1a2a40/00f2ff?text=Digital+Noir';
+            const fullDesc = product.description || 'Подробное описание для этого товара пока не добавлено. Но поверьте, он крутой!';
+
+            page.innerHTML = `
+                <div class="product-hero">
+                    <img src="${img}" alt="${product.name}">
+                </div>
+                <div class="product-info">
+                    <h2 class="product-title">${product.name}</h2>
+                    <div class="product-price">${product.price} ₽</div>
+                    <div class="product-description-full">
+                        <p>${fullDesc}</p>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
+                    </div>
+                    <button class="product-buy-btn" onclick="sendOrder('${product.name}')">КУПИТЬ СЕЙЧАС</button>
+                </div>
+            `;
+            updateView('product_detail');
+        }
+
+        function showProfile() {
+            updateView('profile');
+        }
+
+        // Функция для управления отображением страниц и навигацией
+        function updateView(viewName) {
+            const views = {
+                'categories': document.getElementById('categoryMenu'),
+                'products': document.getElementById('shop-container'),
+                'product_detail': document.getElementById('product-page'),
+                'profile': document.getElementById('profile-page')
+            };
+            
+            const backBtn = document.getElementById('backBtn');
+            const footer = document.getElementById('footerInfo');
+
+            // Скрываем все
+            for (const key in views) {
+                views[key].classList.add('hidden');
+            }
+            
+            // Показываем нужную
+            views[viewName].classList.remove('hidden');
+
+            // Логика кнопки "Назад" и футера
+            if (viewName === 'categories') {
+                backBtn.style.display = 'none';
+                footer.classList.remove('hidden');
+                navigationHistory = ['categories'];
+            } else {
+                backBtn.style.display = 'block';
+                footer.classList.add('hidden');
+                // Добавляем в историю, если это новая страница
+                if (navigationHistory[navigationHistory.length - 1] !== viewName) {
+                     navigationHistory.push(viewName);
+                }
+            }
+        }
+
+        // Обработчик кнопки "Назад"
+        document.getElementById('backBtn').onclick = () => {
+            if (navigationHistory.length > 1) {
+                navigationHistory.pop(); // Удаляем текущую страницу
+                const previousView = navigationHistory[navigationHistory.length - 1];
+                
+                // Если возвращаемся к списку товаров, нужно знать категорию.
+                // Для простоты пока возвращаем в категории. В идеале нужно хранить состояние.
+                if (previousView === 'products') {
+                    // Упрощение: всегда возвращаем в категории из списка товаров
+                     updateView('categories');
+                } else {
+                     updateView(previousView);
+                }
+            } else {
+                 updateView('categories');
+            }
+        };
+
+
+        function sendOrder(name, event) {
+            if(event) event.stopPropagation();
+            const cmd = "buy_" + name.toLowerCase().replace(/ /g, "_");
+            tg.sendData(cmd);
+            tg.close();
+        }
+
+        init();
+    </script>
+</body>
+</html>
