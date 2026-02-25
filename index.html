@@ -1,40 +1,44 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Digital Noir Shop</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body { font-family: sans-serif; background-color: var(--tg-theme-bg-color, #1a1a1a); color: var(--tg-theme-text-color, #ffffff); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .card { background: var(--tg-theme-secondary-bg-color, #2c2c2e); border-radius: 15px; padding: 15px; width: 100%; max-width: 300px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); text-align: center; }
-        .card img { width: 100%; border-radius: 10px; }
-        .card h2 { margin: 15px 0 5px; font-size: 1.2rem; }
-        .card .price { color: #31b545; font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; }
-        button { background-color: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #ffffff); border: none; border-radius: 10px; padding: 12px 20px; width: 100%; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:active { transform: scale(0.98); opacity: 0.8; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>Digital Noir Shop</h1>
-        <p>Лучшие товары по низким ценам</p>
-    </div>
+<div class="shop-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px;">
+        
+        <div class="card">
+            <img src="https://i.postimg.cc/85zX6pYm/cs2prime.jpg" alt="CS2">
+            <h2>CS2 Prime</h2>
+            <div class="price">1 390 ₽</div>
+            <button onclick="buy('buy_cs2')">Купить</button>
+        </div>
 
-    <div class="card">
-        <img src="https://cs13.pikabu.ru/post_img/big/2023/10/09/0/1696801982137959457.png" alt="CS2 Prime">
-        <h2>CS2 Prime Status</h2>
-        <div class="price">1 390 RUB</div>
-        <button id="buy-btn">Купить сейчас</button>
+        <div class="card">
+            <img src="https://i.postimg.cc/6pX6fVf8/minecraft.jpg" alt="Minecraft">
+            <h2>Minecraft</h2>
+            <div class="price">2 500 ₽</div>
+            <button onclick="buy('buy_minecraft')">Купить</button>
+        </div>
+
+        <div class="card">
+            <img src="https://i.postimg.cc/9Fm8mH8v/steam.jpg" alt="Steam">
+            <h2>Steam 10$</h2>
+            <div class="price">1 100 ₽</div>
+            <button onclick="buy('buy_steam_10')">Купить</button>
+        </div>
+
+        <div class="card">
+            <img src="https://i.postimg.cc/7Z9Y0zV0/tg-premium.jpg" alt="TG Premium">
+            <h2>TG Premium</h2>
+            <div class="price">450 ₽</div>
+            <button onclick="buy('buy_tg_prem')">Купить</button>
+        </div>
+
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Развернуть на весь экран
+        tg.expand();
 
-        document.getElementById('buy-btn').addEventListener('click', () => {
-            // Здесь мы будем отправлять сигнал в твой n8n
+        function buy(gameId) {
+            tg.sendData(gameId); // Отправляем ID игры в n8n
+            tg.close();
+        }
+    </script>            // Здесь мы будем отправлять сигнал в твой n8n
             tg.sendData("buy_cs2_prime"); 
             tg.close();
         });
