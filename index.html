@@ -30,7 +30,7 @@
             transition: background 0.5s ease;
         }
 
-        /* АНИМИРОВАННЫЙ ФОН (6 ЦВЕТОВ) */
+        /* АНИМИРОВАННЫЙ ФОН */
         .ambient-bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: -1; overflow: hidden; pointer-events: none;
@@ -68,9 +68,14 @@
         .view { display: none; }
         .view.active { display: block; animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        /* КЛЮЧЕВАЯ АНИМАЦИЯ ВСПЛЫТИЯ */
+        @keyframes popIn { 
+            from { transform: scale(0.5); opacity: 0; } 
+            to { transform: scale(1); opacity: 1; } 
+        }
 
-        /* ГРИД КАТЕГОРИЙ (SQUARE) */
+        /* ГРИД КАТЕГОРИЙ */
         .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         .cat-card {
             background: var(--glass); border: 1px solid var(--glass-border);
@@ -78,14 +83,15 @@
             display: flex; align-items: center; justify-content: center;
             text-align: center; font-size: 10px; font-weight: bold;
             transition: 0.3s; cursor: pointer; text-transform: uppercase; padding: 5px;
+            /* Применяем анимацию ко всем карточкам */
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
         }
         .cat-card:active { transform: scale(0.95); border-color: var(--accent); }
 
-        /* ПУЗЫРИ (ROUND) */
-        .round-mode .category-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; align-items: center; min-height: 50vh; }
+        /* ПУЗЫРИ (ROUND MODE) */
+        .round-mode .category-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; align-items: center; min-height: 20vh; }
         .round-mode .cat-card { 
             width: 110px; height: 110px; border-radius: 50%; 
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; 
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
             background: rgba(255,255,255,0.08);
         }
@@ -93,7 +99,10 @@
         /* ТОВАРЫ */
         .product-list { display: grid; grid-template-columns: 1fr; gap: 15px; }
         .round-mode .product-list { grid-template-columns: 1fr 1fr; }
-        .p-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; padding: 12px; }
+        .p-card { 
+            background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; padding: 12px;
+            animation: popIn 0.4s ease-out both;
+        }
         .p-card img { width: 100%; height: 130px; object-fit: cover; border-radius: 15px; margin-bottom: 10px; }
         .price { color: var(--accent); font-weight: bold; font-size: 18px; margin: 8px 0; }
         .buy-btn { width: 100%; padding: 12px; border: none; border-radius: 12px; background: linear-gradient(90deg, #00d2ff, #7000ff); color: #fff; font-weight: bold; }
@@ -110,7 +119,6 @@
         .nav-item { font-size: 10px; color: #555; text-align: center; text-transform: uppercase; font-weight: bold; }
         .nav-item.active { color: var(--accent); }
 
-        /* ОСТАЛЬНОЕ */
         .stat-item { background: var(--glass); padding: 15px; border-radius: 15px; border: 1px solid var(--glass-border); margin-bottom: 10px; }
         .menu-list { background: var(--glass); border-radius: 15px; overflow: hidden; border: 1px solid var(--glass-border); }
         .menu-item { padding: 15px 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; }
@@ -215,28 +223,28 @@
                 grid.innerHTML = '';
                 
                 if (this.state.theme === 'round' && this.state.isHub) {
-                    // ГЛАВНЫЙ ХАБ (ДЛЯ КРУГА)
                     const hub = [
                         { n: 'МАГАЗИН', a: () => { this.state.isHub = false; this.renderHome(); } },
                         { n: 'ПРОФИЛЬ', a: () => this.nav('view-profile') },
                         { n: 'АКЦИИ', a: () => this.nav('view-promo') },
                         { n: 'ОПЦИИ', a: () => this.nav('view-settings') }
                     ];
-                    hub.forEach(i => {
+                    hub.forEach((i, idx) => {
                         const el = document.createElement('div');
                         el.className = 'cat-card';
                         el.innerText = i.n;
                         el.onclick = i.a;
+                        el.style.animationDelay = `${idx * 0.07}s`; // ЗАДЕРЖКА ДЛЯ КРУГОВ
                         grid.appendChild(el);
                     });
                 } else {
-                    // СПИСОК КАТЕГОРИЙ
                     const cats = [...new Set(this.state.db.map(p => p.category || 'Общее'))];
-                    cats.forEach(c => {
+                    cats.forEach((c, idx) => {
                         const el = document.createElement('div');
                         el.className = 'cat-card';
                         el.innerText = c;
                         el.onclick = () => this.renderProducts(c);
+                        el.style.animationDelay = `${idx * 0.05}s`; // ЗАДЕРЖКА ДЛЯ КВАДРАТОВ
                         grid.appendChild(el);
                     });
                 }
@@ -247,9 +255,10 @@
                 this.nav('view-products');
                 const list = document.getElementById('productList');
                 list.innerHTML = '';
-                this.state.db.filter(p => p.category === cat).forEach(p => {
+                this.state.db.filter(p => p.category === cat).forEach((p, idx) => {
                     const el = document.createElement('div');
                     el.className = 'p-card';
+                    el.style.animationDelay = `${idx * 0.05}s`; // ЗАДЕРЖКА ДЛЯ ТОВАРОВ
                     el.innerHTML = `
                         <img src="${p.image_url || 'https://via.placeholder.com/150'}">
                         <h3>${p.name}</h3>
@@ -268,19 +277,15 @@
             },
 
             back() {
-                // Если мы в подкатегориях круга, возвращаемся в Хаб
                 if (this.state.theme === 'round' && !this.state.isHub && this.state.history[this.state.history.length-1] === 'view-home') {
                     this.state.isHub = true;
                     this.renderHome();
                     return;
                 }
-                
                 if(this.state.history.length <= 1) return;
                 this.state.history.pop();
                 const prev = this.state.history[this.state.history.length-1];
-                
                 if (prev === 'view-home') this.state.isHub = true;
-                
                 document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
                 document.getElementById(prev).classList.add('active');
                 if (prev === 'view-home') this.renderHome();
@@ -291,7 +296,6 @@
                 const cur = this.state.history[this.state.history.length-1];
                 const isRoot = (cur === 'view-home' && this.state.isHub);
                 document.getElementById('globalBack').style.display = isRoot ? 'none' : 'block';
-                
                 document.querySelectorAll('.nav-item').forEach(i => {
                     i.classList.remove('active');
                     if(i.id.includes(cur.split('-')[1])) i.classList.add('active');
